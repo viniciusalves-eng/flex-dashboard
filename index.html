@@ -783,7 +783,7 @@
 
 <script>
 // ── GOOGLE SHEETS CSV URL ──────────────────────────────────
-const SHEETS_CSV_URL = 'https://script.google.com/a/macros/mercadolivre.com/s/AKfycbzAdhmhOWPhFePyQ-ixFlyCQPTwB2QgD4jvGZrXynXhFRDKoYzZstmuxf0wbIFsjGYxCQ/exec';
+const DATA_URL = 'https://raw.githubusercontent.com/viniciusalves-eng/flex-dashboard/main/data.json';
 
 // ── LIVE DATA ──────────────────────────────────────────────
 let liveData = [];
@@ -810,14 +810,19 @@ function parseCSV(text) {
 
 async function fetchLiveData() {
   try {
-    const res = await fetch(SHEETS_CSV_URL, { redirect: 'follow' });
+    const res = await fetch(DATA_URL, { redirect: 'follow' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    if (!text || text.trim().length === 0) throw new Error('Resposta vazia');
-    liveData = parseCSV(text);
-    if (liveData.length === 0) throw new Error('Nenhuma linha encontrada no CSV');
+    const json = await res.json();
+    if (!json.dados || json.dados.length === 0) throw new Error('Nenhum dado encontrado');
+    liveData = json.dados.map(d => ({
+      mes:               d.mes,
+      cidade:            d.cidade,
+      transportadora:    d.transportadora,
+      qtd_total_pacotes: String(d.qtd_total_pacotes),
+      qtd_pacotes_atraso:String(d.qtd_pacotes_atraso),
+    }));
     renderLiveSection();
-    updateSyncBadge(true);
+    updateSyncBadge(true, json.atualizado_em);
   } catch(e) {
     console.error('Erro ao buscar dados:', e);
     updateSyncBadge(false);
@@ -831,12 +836,12 @@ async function fetchLiveData() {
   }
 }
 
-function updateSyncBadge(ok) {
+function updateSyncBadge(ok, dataHora) {
   const el = document.getElementById('syncBadge');
-  const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  const label = dataHora || new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
   if (ok) {
     el.className = 'sync-badge';
-    el.innerHTML = `<div class="sync-dot"></div> Atualizado às ${now}`;
+    el.innerHTML = `<div class="sync-dot"></div> Atualizado em ${label}`;
   } else {
     el.className = 'sync-badge error';
     el.innerHTML = `<div class="sync-dot"></div> Erro ao sincronizar`;

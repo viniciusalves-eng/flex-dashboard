@@ -420,6 +420,18 @@
   }
   .share-val { font-size: 11px; color: var(--muted); }
 
+  /* Potential bar */
+  .pot-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .pot-track {
+    flex: 1; height: 8px; background: #f0f0ee;
+    border-radius: 4px; overflow: hidden; min-width: 60px;
+  }
+  .pot-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .pot-pct { font-size: 11px; font-weight: 700; white-space: nowrap; }
+
   /* Sellers */
   .sellers-wrap { display: flex; align-items: baseline; gap: 4px; }
   .sellers-main { font-weight: 700; font-size: 13px; }
@@ -662,6 +674,17 @@
         <div class="count-badge" id="liveCount">Carregando…</div>
       </div>
       <div id="mesTabs" class="mes-tabs"></div>
+      <div class="controls" style="padding-bottom:16px;">
+        <div class="search-wrap">
+          <span class="search-icon">🏙️</span>
+          <select class="search-input" id="liveFiltroCity" onchange="renderLiveSection()" style="padding-left:36px;">
+            <option value="">Todas as cidades</option>
+          </select>
+        </div>
+        <select class="filter-select" id="liveFiltroTransp" onchange="renderLiveSection()">
+          <option value="">Todas as transportadoras</option>
+        </select>
+      </div>
     </div>
     <div class="table-scroll">
       <table>
@@ -669,10 +692,10 @@
           <tr>
             <th>Mês</th>
             <th>Cidade</th>
-            <th>Transportadora</th>
-            <th>Qtd Total Pacotes</th>
-            <th>Qtd Pacotes Atraso</th>
-            <th>% Atraso</th>
+            <th class="th-center">Transportadoras</th>
+            <th class="th-right">Vol. Total Pacotes</th>
+            <th class="th-right">Pacotes em Atraso</th>
+            <th class="th-center">% Atraso</th>
           </tr>
         </thead>
         <tbody id="liveTable"></tbody>
@@ -757,6 +780,7 @@
             <th onclick="setSortCol('sellers')" class="th-center">Sellers Ativos <span class="sort-arrow">↕</span></th>
             <th class="th-center">Sellers c/ Vendas</th>
             <th onclick="setSortCol('volume')" class="th-center">Volume Flex <span class="sort-arrow">↕</span></th>
+            <th>Potencial Flex</th>
             <th>Transportadora</th>
             <th>Plano</th>
           </tr>
@@ -821,6 +845,7 @@ async function fetchLiveData() {
       qtd_total_pacotes: String(d.qtd_total_pacotes),
       qtd_pacotes_atraso:String(d.qtd_pacotes_atraso),
     }));
+    populateLiveFilters();
     renderLiveSection();
     updateSyncBadge(true, json.atualizado_em);
   } catch(e) {
@@ -870,32 +895,56 @@ function setMes(mes) {
   renderLiveSection();
 }
 
+function populateLiveFilters() {
+  const cidades   = [...new Set(liveData.map(d => d.cidade))].sort();
+  const transps   = [...new Set(liveData.map(d => d.transportadora).filter(Boolean))].sort();
+  const selCity   = document.getElementById('liveFiltroCity');
+  const selTransp = document.getElementById('liveFiltroTransp');
+  selCity.innerHTML   = '<option value="">Todas as cidades</option>'
+    + cidades.map(c => `<option value="${c}">${c}</option>`).join('');
+  selTransp.innerHTML = '<option value="">Todas as transportadoras</option>'
+    + transps.map(t => `<option value="${t}">${t}</option>`).join('');
+}
+
+function agregaLive(data) {
+  const map = {};
+  data.forEach(d => {
+    const key = d.mes + '||' + d.cidade;
+    if (!map[key]) map[key] = { mes: d.mes, cidade: d.cidade, transportadoras: new Set(), qtd_total: 0, qtd_atraso: 0 };
+    if (d.transportadora) map[key].transportadoras.add(d.transportadora);
+    map[key].qtd_total  += parseInt(d.qtd_total_pacotes  || 0);
+    map[key].qtd_atraso += parseInt(d.qtd_pacotes_atraso || 0);
+  });
+  return Object.values(map).sort((a, b) => a.mes !== b.mes ? a.mes.localeCompare(b.mes) : b.qtd_total - a.qtd_total);
+}
+
 function renderLiveSection() {
   renderMesTabs();
-  const filtered = mesSelecionado === 'todos'
-    ? liveData
-    : liveData.filter(d => d.mes === mesSelecionado);
+
+  const filtroCity   = (document.getElementById('liveFiltroCity')   || {}).value || '';
+  const filtroTransp = (document.getElementById('liveFiltroTransp') || {}).value || '';
+
+  let base = mesSelecionado === 'todos' ? liveData : liveData.filter(d => d.mes === mesSelecionado);
+  if (filtroCity)   base = base.filter(d => d.cidade === filtroCity);
+  if (filtroTransp) base = base.filter(d => d.transportadora === filtroTransp);
+
+  const agregado = agregaLive(base);
 
   document.getElementById('liveCount').textContent =
-    `${filtered.length} registro${filtered.length !== 1 ? 's' : ''}`;
+    `${agregado.length} cidade${agregado.length !== 1 ? 's' : ''}`;
 
   const noResults = document.getElementById('liveNoResults');
-  const tbody = document.getElementById('liveTable');
+  const tbody     = document.getElementById('liveTable');
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = '';
-    noResults.style.display = 'block';
-    return;
-  }
+  if (agregado.length === 0) { tbody.innerHTML = ''; noResults.style.display = 'block'; return; }
   noResults.style.display = 'none';
 
-  // também atualiza volume na tabela estática por cidade
-  const volPorCidade = {};
-  const transpPorCidade = {};
+  // atualiza volume e transportadoras na tabela estática
+  const volPorCidade = {}, transpPorCidade = {};
   liveData.forEach(d => {
     const key = normalizeCity(d.cidade);
     volPorCidade[key] = (volPorCidade[key] || 0) + parseInt(d.qtd_total_pacotes || 0);
-    if (d.transportadora && d.transportadora !== '—') transpPorCidade[key] = d.transportadora;
+    if (d.transportadora) transpPorCidade[key] = d.transportadora;
   });
   cidades.forEach(c => {
     const key = normalizeCity(c.cidade);
@@ -904,23 +953,37 @@ function renderLiveSection() {
   });
   filterTable();
 
-  tbody.innerHTML = filtered.map(d => {
-    const total  = parseInt(d.qtd_total_pacotes || 0);
-    const atraso = parseInt(d.qtd_pacotes_atraso || 0);
-    const pct    = total > 0 ? ((atraso / total) * 100).toFixed(1) : '0.0';
+  tbody.innerHTML = agregado.map(d => {
+    const pct      = d.qtd_total > 0 ? ((d.qtd_atraso / d.qtd_total) * 100).toFixed(1) : '0.0';
     const pctColor = parseFloat(pct) > 10 ? '#e63946' : parseFloat(pct) > 5 ? '#e07000' : '#00b377';
+    const nTransp  = d.transportadoras.size;
     return `
       <tr>
         <td><span style="font-size:11px;background:#f5f5f3;padding:3px 8px;border-radius:20px;font-weight:600;">${d.mes}</span></td>
         <td class="cidade">${d.cidade}</td>
-        <td><span class="transp" title="${d.transportadora}">${d.transportadora || '—'}</span></td>
-        <td class="num"><span class="volume-val">${fmt(total)}</span></td>
-        <td class="num" style="color:#e63946;font-weight:600;">${fmt(atraso)}</td>
         <td style="text-align:center;">
-          <span style="font-weight:700;color:${pctColor}">${pct}%</span>
+          <span style="background:#f0f0ee;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">${nTransp}</span>
         </td>
+        <td class="num"><span class="volume-val">${fmt(d.qtd_total)}</span></td>
+        <td class="num" style="color:#e63946;font-weight:600;">${fmt(d.qtd_atraso)}</td>
+        <td style="text-align:center;"><span style="font-weight:700;color:${pctColor}">${pct}%</span></td>
       </tr>`;
   }).join('');
+}
+
+// ── BARRA DE POTENCIAL FLEX ──
+function potentialBar(volume, siME2) {
+  if (!volume || !siME2) return '<span style="color:#ccc;font-size:12px;">—</span>';
+  const pct     = Math.min((volume / siME2) * 100, 100);
+  const color   = pct >= 10 ? '#00b377' : pct >= 5 ? '#FFE600' : pct >= 2 ? '#e07000' : '#e63946';
+  const label   = pct < 0.1 ? pct.toFixed(2) : pct.toFixed(1);
+  return `
+    <div class="pot-wrap">
+      <div class="pot-track">
+        <div class="pot-fill" style="width:${Math.max(pct, 0.5)}%;background:${color};"></div>
+      </div>
+      <span class="pot-pct" style="color:${color}">${label}%</span>
+    </div>`;
 }
 
 function normalizeCity(name) {
@@ -1002,6 +1065,7 @@ function renderMainTable(data) {
         </div>
       </td>
       <td style="text-align:center;">${d.volume > 0 ? `<span class="volume-val">${fmt(d.volume)}</span>` : '<span style="color:#ccc">—</span>'}</td>
+      <td>${potentialBar(d.volume, d.siME2)}</td>
       <td><span class="transp" title="${d.transp}">${d.transp}</span></td>
       <td>${planoLabels[d.plano]}</td>
     </tr>

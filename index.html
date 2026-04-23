@@ -707,24 +707,6 @@
     </div>
   </div>
 
-  <!-- SELLERS TABLE -->
-  <div class="sellers-section">
-    <h3>Sellers Ativos por Cidade com Flex</h3>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Cidade</th>
-            <th>Sellers Ativos</th>
-            <th>Sellers c/ Vendas</th>
-            <th>Volume Flex (Estimado)</th>
-          </tr>
-        </thead>
-        <tbody id="sellersTable"></tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- CHARTS -->
   <div class="charts">
     <div class="chart-box">
@@ -972,15 +954,15 @@ function renderLiveSection() {
 }
 
 // ── BARRA DE POTENCIAL FLEX ──
-function potentialBar(volume, siME2) {
-  if (!volume || !siME2) return '<span style="color:#ccc;font-size:12px;">—</span>';
-  const pct     = Math.min((volume / siME2) * 100, 100);
-  const color   = pct >= 10 ? '#00b377' : pct >= 5 ? '#FFE600' : pct >= 2 ? '#e07000' : '#e63946';
-  const label   = pct < 0.1 ? pct.toFixed(2) : pct.toFixed(1);
+function potentialBar(volume, siFlex) {
+  if (!volume || !siFlex) return '<span style="color:#ccc;font-size:12px;">—</span>';
+  const pct   = Math.min((volume / siFlex) * 100, 100);
+  const color = pct >= 80 ? '#00b377' : pct >= 50 ? '#FFE600' : pct >= 25 ? '#e07000' : '#e63946';
+  const label = pct < 1 ? pct.toFixed(1) : Math.round(pct);
   return `
     <div class="pot-wrap">
       <div class="pot-track">
-        <div class="pot-fill" style="width:${Math.max(pct, 0.5)}%;background:${color};"></div>
+        <div class="pot-fill" style="width:${Math.max(pct, 1)}%;background:${color};"></div>
       </div>
       <span class="pot-pct" style="color:${color}">${label}%</span>
     </div>`;
@@ -1065,7 +1047,7 @@ function renderMainTable(data) {
         </div>
       </td>
       <td style="text-align:center;">${d.volume > 0 ? `<span class="volume-val">${fmt(d.volume)}</span>` : '<span style="color:#ccc">—</span>'}</td>
-      <td>${potentialBar(d.volume, d.siME2)}</td>
+      <td>${potentialBar(d.volume, d.siFlex)}</td>
       <td><span class="transp" title="${d.transp}">${d.transp}</span></td>
       <td>${planoLabels[d.plano]}</td>
     </tr>

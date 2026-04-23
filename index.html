@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Cidades Flex — MLB</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1050,37 +1050,32 @@ function renderSellersTable() {
 }
 
 // ── CHARTS ──
-function iniciarGraficos() {
-  if (typeof Chart === 'undefined') {
-    setTimeout(iniciarGraficos, 500);
-    return;
-  }
+const ML_PALETTE = ['#FFE600', '#7BC8F6', '#FF8FA3', '#A8D5A2', '#C4B5FD', '#D4D4D4'];
 
+function buildCharts() {
   const top10  = getSorted(cidades, 'siME2').slice(0, 10);
   const labels = top10.map(d => d.cidade);
   const siME2  = top10.map(d => d.siME2);
   const siFlex = top10.map(d => d.siFlex);
 
-  const baseOpts = (max, color) => ({
+  const baseOpts = (max) => ({
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
-        callbacks: {
-          label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR')
-        }
+        callbacks: { label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR') }
       }
     },
     scales: {
       x: {
-        grid: { color: '#f0f0ee' },
+        grid: { display: false },
         ticks: { color: '#999', font: { size: 10, family: 'DM Sans' } },
         max
       },
       y: {
-        grid: { display: false },
+        grid: { color: '#f0f0f0' },
         ticks: { color: '#333', font: { size: 11, weight: '600', family: 'DM Sans' } }
       }
     }
@@ -1088,21 +1083,33 @@ function iniciarGraficos() {
 
   new Chart(document.getElementById('chartME2'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{ label: 'SI ME2', data: siME2, backgroundColor: '#FFE600', borderRadius: 5 }]
-    },
+    data: { labels, datasets: [{ label: 'SI ME2', data: siME2, backgroundColor: ML_PALETTE[0], borderRadius: 5 }] },
     options: baseOpts(7000000)
   });
 
   new Chart(document.getElementById('chartFlex'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{ label: 'SI Flex', data: siFlex, backgroundColor: '#0d0d0d', borderRadius: 5 }]
-    },
+    data: { labels, datasets: [{ label: 'SI Flex', data: siFlex, backgroundColor: ML_PALETTE[1], borderRadius: 5 }] },
     options: baseOpts(200000)
   });
+}
+
+function iniciarGraficos() {
+  const canvases = [document.getElementById('chartME2'), document.getElementById('chartFlex')];
+  const allReady = canvases.every(c => c && c.offsetParent !== null);
+
+  if (typeof Chart === 'undefined' || !allReady) {
+    const observer = new MutationObserver(() => {
+      if (typeof Chart !== 'undefined') {
+        observer.disconnect();
+        setTimeout(buildCharts, 50);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    if (typeof Chart !== 'undefined') setTimeout(buildCharts, 50);
+    return;
+  }
+  setTimeout(buildCharts, 50);
 }
 
 // ── INIT ──

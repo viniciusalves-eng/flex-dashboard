@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cidades Flex — MLB</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFE600;
+    --black: #0d0d0d;
+    --dark: #1a1a1a;
+    --card: #ffffff;
+    --bg: #f2f2f0;
+    --border: #e5e5e2;
+    --green: #00b377;
+    --red: #e63946;
+    --blue: #4361ee;
+    --orange: #e07000;
+    --text: #111111;
+    --muted: #888888;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--black);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-brand .logo {
+    background: var(--yellow);
+    color: var(--black);
+    font-family: 'Syne', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    letter-spacing: 1.5px;
+  }
+
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+
+  .topbar-meta {
+    font-size: 12px;
+    color: #666;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    padding: 32px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--black);
+    line-height: 1.1;
+  }
+
+  .page-header h1 span {
+    color: var(--yellow);
+    background: var(--black);
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+
+  .page-header p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* ── KPIs ── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi {
+    background: var(--black);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .kpi:hover { transform: translateY(-2px); }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--yellow);
+  }
+  .kpi.verde::before  { background: var(--green); }
+  .kpi.vermelho::before { background: var(--red); }
+  .kpi.azul::before   { background: var(--blue); }
+
+  .kpi-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: var(--yellow);
+    line-height: 1;
+  }
+  .kpi.verde .kpi-val   { color: var(--green); }
+  .kpi.vermelho .kpi-val { color: var(--red); }
+  .kpi.azul .kpi-val    { color: var(--blue); }
+
+  .kpi-label {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  /* ── CHARTS ── */
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .chart-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-box h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-box h3::before {
+    content: '';
+    width: 4px; height: 16px;
+    background: var(--yellow);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .chart-box canvas { flex: 1; min-height: 0; }
+
+  /* ── TABLE SECTION ── */
+  .table-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .table-header {
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .table-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--black);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-header h3::before {
+    content: '';
+    width: 4px; height: 16px;
+    background: var(--yellow);
+    border-radius: 2px;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-bottom: 16px;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    border-color: var(--yellow);
+    background: #fff;
+  }
+
+  .filter-select {
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #fafafa;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 160px;
+  }
+
+  .filter-select:focus { border-color: var(--yellow); }
+
+  .count-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 9px 14px;
+    background: #f5f5f3;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .count-badge strong { color: var(--text); }
+
+  /* ── TABLE ── */
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--black);
+    color: #aaa;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+
+  thead th:hover { color: var(--yellow); }
+  thead th.sorted { color: var(--yellow); }
+
+  thead th .sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.4;
+    font-size: 9px;
+  }
+
+  thead th.sorted .sort-arrow { opacity: 1; }
+
+  thead th.th-right  { text-align: right; }
+  thead th.th-center { text-align: center; }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f5f5f3;
+    color: #333;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr {
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover td { background: #fafaf8; }
+
+  td.cidade {
+    font-weight: 600;
+    color: var(--black);
+    font-size: 13px;
+  }
+
+  td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: #444;
+  }
+
+  .volume-val {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Planos */
+  .plano {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .pl-integracao  { background: #e6f9f2; color: #007a4d; }
+  .pl-performance { background: #ffe5e5; color: #cc0000; }
+  .pl-hunting     { background: #e8f0fe; color: #4361ee; }
+  .pl-inte-perf   { background: #fff3e0; color: #e07000; }
+  .pl-vazio       { color: #ccc; font-style: italic; font-size: 12px; }
+
+  /* Share bar */
+  .share-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .share-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--yellow);
+    min-width: 4px;
+    transition: width 0.3s;
+  }
+  .share-val { font-size: 11px; color: var(--muted); }
+
+  /* Sellers */
+  .sellers-wrap { display: flex; align-items: baseline; gap: 4px; }
+  .sellers-main { font-weight: 700; font-size: 13px; }
+  .sellers-pct  { color: var(--muted); font-size: 11px; }
+
+  /* Transportadora */
+  .transp { font-size: 11px; color: #666; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── SELLERS TABLE ── */
+  .sellers-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  .sellers-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--black);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .sellers-section h3::before {
+    content: '';
+    width: 4px; height: 16px;
+    background: var(--yellow);
+    border-radius: 2px;
+  }
+
+  /* ── NO RESULTS ── */
+  .no-results {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    display: none;
+  }
+
+  .no-results span { font-size: 32px; display: block; margin-bottom: 8px; }
+
+  /* ── LEGENDA ── */
+  .legenda {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 16px 24px;
+    background: #f9f9f7;
+    border-top: 1px solid var(--border);
+  }
+
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; }
+  .leg-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: #bbb;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .main { padding: 20px 16px; }
+    .topbar { padding: 0 16px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .charts { grid-template-columns: 1fr; }
+    .page-header h1 { font-size: 26px; }
+  }
+
+  @media (max-width: 500px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi-val { font-size: 28px; }
+    .topbar-title { display: none; }
+  }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    gap: 16px;
+    transition: opacity 0.4s ease;
+  }
+
+  .loading-overlay.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #333;
+    border-top-color: var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .loading-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    color: #666;
+    letter-spacing: 1px;
+  }
+
+  .loading-text span { color: var(--yellow); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SYNC BADGE ── */
+  .sync-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--green);
+    background: #e6f9f2;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .sync-badge.error { color: var(--red); background: #ffe5e5; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── MES FILTER ── */
+  .mes-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 24px 16px;
+  }
+
+  .mes-tab {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .mes-tab:hover { border-color: var(--yellow); color: var(--text); }
+  .mes-tab.active { background: var(--black); color: var(--yellow); border-color: var(--black); }
+
+  /* ── LIVE SECTION ── */
+  .live-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .kpi         { animation: fadeUp 0.4s ease both; }
+  .kpi:nth-child(1) { animation-delay: 0.05s; }
+  .kpi:nth-child(2) { animation-delay: 0.10s; }
+  .kpi:nth-child(3) { animation-delay: 0.15s; }
+  .kpi:nth-child(4) { animation-delay: 0.20s; }
+
+  .chart-box   { animation: fadeUp 0.4s ease 0.25s both; }
+  .table-section, .sellers-section { animation: fadeUp 0.4s ease 0.35s both; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Buscando dados do <span>BigQuery</span>…</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo">FLEX MLB</div>
+    <div class="topbar-title">Dashboard de Cidades</div>
+  </div>
+  <div class="topbar-meta" id="syncBadge">Carregando…</div>
+</div>
+
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Cidades <span>Flex</span> — Oportunidades e Planos</h1>
+    <p>Visão de volume, share e estratégia por cidade · Mercado Livre</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-val">25</div>
+      <div class="kpi-label">Cidades mapeadas</div>
+    </div>
+    <div class="kpi verde">
+      <div class="kpi-val">9</div>
+      <div class="kpi-label">Com plano definido</div>
+    </div>
+    <div class="kpi vermelho">
+      <div class="kpi-val">4</div>
+      <div class="kpi-label">Plano Performance</div>
+    </div>
+    <div class="kpi azul">
+      <div class="kpi-val">5</div>
+      <div class="kpi-label">Plano Integração</div>
+    </div>
+  </div>
+
+  <!-- LIVE: VOLUME FLEX POR CIDADE (BigQuery) -->
+  <div class="table-section" id="liveSection" style="margin-bottom:28px;">
+    <div class="table-header">
+      <div class="table-header-top">
+        <div class="live-header">
+          <h3>📡 Volume Flex por Cidade — Dados ao Vivo</h3>
+        </div>
+        <div class="count-badge" id="liveCount">Carregando…</div>
+      </div>
+      <div id="mesTabs" class="mes-tabs"></div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Cidade</th>
+            <th>Transportadora</th>
+            <th>Qtd Total Pacotes</th>
+            <th>Qtd Pacotes Atraso</th>
+            <th>% Atraso</th>
+          </tr>
+        </thead>
+        <tbody id="liveTable"></tbody>
+      </table>
+      <div class="no-results" id="liveNoResults">
+        <span>📡</span>
+        Nenhum dado encontrado.
+      </div>
+    </div>
+  </div>
+
+  <!-- SELLERS TABLE -->
+  <div class="sellers-section">
+    <h3>Sellers Ativos por Cidade com Flex</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Cidade</th>
+            <th>Sellers Ativos</th>
+            <th>Sellers c/ Vendas</th>
+            <th>Volume Flex (Estimado)</th>
+          </tr>
+        </thead>
+        <tbody id="sellersTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts">
+    <div class="chart-box">
+      <h3>Top 10 Cidades — SI ME2</h3>
+      <canvas id="chartME2"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Top 10 Cidades — SI Flex</h3>
+      <canvas id="chartFlex"></canvas>
+    </div>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="table-section">
+    <div class="table-header">
+      <div class="table-header-top">
+        <h3>Detalhamento por Cidade</h3>
+        <div class="count-badge">
+          Exibindo <strong id="rowCount">25</strong> de 25 cidades
+        </div>
+      </div>
+      <div class="controls">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar cidade ou transportadora…" oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="filterPlano" onchange="filterTable()">
+          <option value="">Todos os planos</option>
+          <option value="integracao">Integração</option>
+          <option value="performance">Performance</option>
+          <option value="hunting">Hunting</option>
+          <option value="inte-perf">Inte + Perf</option>
+          <option value="vazio">Sem plano</option>
+        </select>
+        <select class="filter-select" id="sortCol" onchange="filterTable()">
+          <option value="siME2">Ordenar: SI ME2 ↓</option>
+          <option value="siFlex">Ordenar: SI Flex ↓</option>
+          <option value="cidade">Ordenar: Cidade A-Z</option>
+          <option value="sellers">Ordenar: Sellers ↓</option>
+          <option value="volume">Ordenar: Volume Flex ↓</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSortCol('cidade')">Cidade <span class="sort-arrow">↕</span></th>
+            <th onclick="setSortCol('siME2')" class="sorted th-right">SI ME2 <span class="sort-arrow">↓</span></th>
+            <th onclick="setSortCol('siFlex')" class="th-right">SI Flex <span class="sort-arrow">↕</span></th>
+            <th>Share Flex</th>
+            <th onclick="setSortCol('sellers')" class="th-center">Sellers Ativos <span class="sort-arrow">↕</span></th>
+            <th class="th-center">Sellers c/ Vendas</th>
+            <th onclick="setSortCol('volume')" class="th-center">Volume Flex <span class="sort-arrow">↕</span></th>
+            <th>Transportadora</th>
+            <th>Plano</th>
+          </tr>
+        </thead>
+        <tbody id="mainTable"></tbody>
+      </table>
+      <div class="no-results" id="noResults">
+        <span>🔍</span>
+        Nenhuma cidade encontrada com esses filtros.
+      </div>
+    </div>
+
+    <div class="legenda">
+      <div class="leg-item"><div class="leg-dot" style="background:#00b377"></div>Integração</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#e63946"></div>Performance</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#4361ee"></div>Hunting</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#e07000"></div>Inte + Performance</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ccc"></div>Sem plano</div>
+    </div>
+  </div>
+
+  <div class="footer">Dashboard Flex MLB · Dados internos · Uso restrito</div>
+</div>
+
+<script>
+// ── GOOGLE SHEETS CSV URL ──────────────────────────────────
+const SHEETS_CSV_URL = 'https://script.google.com/a/macros/mercadolivre.com/s/AKfycbze-sZg26bamlkZEFYdKxAzObNxuNqXsBXE4eqhNRrN5txNvrGY6JIzmJYHxV19fC-REQ/exec';
+
+// ── LIVE DATA ──────────────────────────────────────────────
+let liveData = [];
+let mesSelecionado = 'todos';
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+  return lines.slice(1).map(line => {
+    // handle quoted fields
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let ch of line) {
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  }).filter(r => r.mes && r.cidade);
+}
+
+async function fetchLiveData() {
+  try {
+    const res = await fetch(SHEETS_CSV_URL, { redirect: 'follow' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (!text || text.trim().length === 0) throw new Error('Resposta vazia');
+    liveData = parseCSV(text);
+    if (liveData.length === 0) throw new Error('Nenhuma linha encontrada no CSV');
+    renderLiveSection();
+    updateSyncBadge(true);
+  } catch(e) {
+    console.error('Erro ao buscar dados:', e);
+    updateSyncBadge(false);
+    document.getElementById('liveTable').innerHTML = `
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:#e63946;">
+        ⚠️ Erro ao carregar dados: ${e.message}
+      </td></tr>`;
+    document.getElementById('liveCount').textContent = 'Erro ao carregar';
+  } finally {
+    hideLoading();
+  }
+}
+
+function updateSyncBadge(ok) {
+  const el = document.getElementById('syncBadge');
+  const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  if (ok) {
+    el.className = 'sync-badge';
+    el.innerHTML = `<div class="sync-dot"></div> Atualizado às ${now}`;
+  } else {
+    el.className = 'sync-badge error';
+    el.innerHTML = `<div class="sync-dot"></div> Erro ao sincronizar`;
+  }
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('hide');
+  setTimeout(() => overlay.remove(), 500);
+}
+
+function renderMesTabs() {
+  const meses = ['todos', ...new Set(liveData.map(d => d.mes).sort())];
+  const container = document.getElementById('mesTabs');
+  container.innerHTML = meses.map(m => `
+    <button class="mes-tab ${m === mesSelecionado ? 'active' : ''}"
+      onclick="setMes('${m}')">
+      ${m === 'todos' ? 'Todos os meses' : m}
+    </button>
+  `).join('');
+}
+
+function setMes(mes) {
+  mesSelecionado = mes;
+  renderLiveSection();
+}
+
+function renderLiveSection() {
+  renderMesTabs();
+  const filtered = mesSelecionado === 'todos'
+    ? liveData
+    : liveData.filter(d => d.mes === mesSelecionado);
+
+  document.getElementById('liveCount').textContent =
+    `${filtered.length} registro${filtered.length !== 1 ? 's' : ''}`;
+
+  const noResults = document.getElementById('liveNoResults');
+  const tbody = document.getElementById('liveTable');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    noResults.style.display = 'block';
+    return;
+  }
+  noResults.style.display = 'none';
+
+  // também atualiza volume na tabela estática por cidade
+  const volPorCidade = {};
+  const transpPorCidade = {};
+  liveData.forEach(d => {
+    const key = normalizeCity(d.cidade);
+    volPorCidade[key] = (volPorCidade[key] || 0) + parseInt(d.qtd_total_pacotes || 0);
+    if (d.transportadora && d.transportadora !== '—') transpPorCidade[key] = d.transportadora;
+  });
+  cidades.forEach(c => {
+    const key = normalizeCity(c.cidade);
+    if (volPorCidade[key]) c.volume = volPorCidade[key];
+    if (transpPorCidade[key]) c.transp = transpPorCidade[key];
+  });
+  filterTable();
+
+  tbody.innerHTML = filtered.map(d => {
+    const total  = parseInt(d.qtd_total_pacotes || 0);
+    const atraso = parseInt(d.qtd_pacotes_atraso || 0);
+    const pct    = total > 0 ? ((atraso / total) * 100).toFixed(1) : '0.0';
+    const pctColor = parseFloat(pct) > 10 ? '#e63946' : parseFloat(pct) > 5 ? '#e07000' : '#00b377';
+    return `
+      <tr>
+        <td><span style="font-size:11px;background:#f5f5f3;padding:3px 8px;border-radius:20px;font-weight:600;">${d.mes}</span></td>
+        <td class="cidade">${d.cidade}</td>
+        <td><span class="transp" title="${d.transportadora}">${d.transportadora || '—'}</span></td>
+        <td class="num"><span class="volume-val">${fmt(total)}</span></td>
+        <td class="num" style="color:#e63946;font-weight:600;">${fmt(atraso)}</td>
+        <td style="text-align:center;">
+          <span style="font-weight:700;color:${pctColor}">${pct}%</span>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function normalizeCity(name) {
+  if (!name) return '';
+  return name.toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// ── DADOS ESTÁTICOS ──────────────────────────────────────────────────
+const cidades = [
+  { cidade:'Franca',             siME2:6407743, siFlex:8272,   share:'0,00%', shareW:4,  sellers:229, selVendas:187, selPct:81.7, volume:8272,   transp:'Moto Express / Anjun Super Express', plano:'vazio' },
+  { cidade:'Jundiaí',            siME2:6335493, siFlex:19773,  share:'0,01%', shareW:8,  sellers:412, selVendas:338, selPct:82.0, volume:19773,  transp:'Delivery Company / Dan Delivery Express', plano:'integracao' },
+  { cidade:'Campinas',           siME2:5154703, siFlex:57961,  share:'0,02%', shareW:14, sellers:412, selVendas:385, selPct:93.4, volume:57961,  transp:'Pex / Mais Velozes Express / Mega Flex', plano:'integracao' },
+  { cidade:'Ibitinga',           siME2:4068590, siFlex:444,    share:'0,00%', shareW:4,  sellers:145, selVendas:89,  selPct:61.4, volume:444,    transp:'—', plano:'vazio' },
+  { cidade:'Sorocaba',           siME2:3601983, siFlex:11522,  share:'0,00%', shareW:4,  sellers:167, selVendas:142, selPct:85.0, volume:11522,  transp:'Original Express', plano:'integracao' },
+  { cidade:'Ribeirão Preto',     siME2:2929116, siFlex:12524,  share:'0,00%', shareW:4,  sellers:188, selVendas:159, selPct:84.6, volume:12524,  transp:'Mais Velozes Express', plano:'hunting' },
+  { cidade:'Extrema',            siME2:2847801, siFlex:238,    share:'0,00%', shareW:4,  sellers:78,  selVendas:45,  selPct:57.7, volume:238,    transp:'—', plano:'vazio' },
+  { cidade:'S.J. Rio Preto',     siME2:2665748, siFlex:6325,   share:'0,00%', shareW:4,  sellers:156, selVendas:128, selPct:82.1, volume:6325,   transp:'Nobres Entregas', plano:'integracao' },
+  { cidade:'Cajamar',            siME2:2628906, siFlex:34520,  share:'0,01%', shareW:8,  sellers:234, selVendas:198, selPct:84.6, volume:34520,  transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Barueri',            siME2:2381925, siFlex:136863, share:'0,04%', shareW:40, sellers:312, selVendas:289, selPct:92.6, volume:136863, transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Goiânia',            siME2:2283576, siFlex:16298,  share:'0,00%', shareW:4,  sellers:219, selVendas:189, selPct:86.3, volume:16298,  transp:'Guri dos Pacotinhos / Única Express / Speed Boys', plano:'inte-perf' },
+  { cidade:'Cotia',              siME2:2271499, siFlex:143755, share:'0,04%', shareW:40, sellers:267, selVendas:245, selPct:91.8, volume:143755, transp:'27 transportadoras atualmente', plano:'vazio' },
+  { cidade:'Americana',          siME2:2249289, siFlex:2325,   share:'0,00%', shareW:4,  sellers:145, selVendas:118, selPct:81.4, volume:2325,   transp:'Busca Entregas', plano:'vazio' },
+  { cidade:'Mogi das Cruzes',    siME2:2205656, siFlex:185730, share:'0,05%', shareW:50, sellers:298, selVendas:278, selPct:93.3, volume:185730, transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Mauá',               siME2:2192841, siFlex:172897, share:'0,05%', shareW:50, sellers:276, selVendas:256, selPct:92.8, volume:172897, transp:'—', plano:'vazio' },
+  { cidade:'S.J. dos Campos',    siME2:1982979, siFlex:4277,   share:'0,00%', shareW:4,  sellers:203, selVendas:167, selPct:82.3, volume:4277,   transp:'—', plano:'vazio' },
+  { cidade:'Limeira',            siME2:1845994, siFlex:2294,   share:'0,00%', shareW:4,  sellers:134, selVendas:109, selPct:81.3, volume:2294,   transp:'—', plano:'vazio' },
+  { cidade:'Santana de Parnaíba',siME2:1834994, siFlex:107494, share:'0,03%', shareW:30, sellers:189, selVendas:172, selPct:91.0, volume:107494, transp:'—', plano:'vazio' },
+  { cidade:'Maringá',            siME2:1780876, siFlex:7866,   share:'0,00%', shareW:4,  sellers:164, selVendas:139, selPct:84.8, volume:7866,   transp:'—', plano:'vazio' },
+  { cidade:'Birigui',            siME2:1770724, siFlex:1163,   share:'0,00%', shareW:4,  sellers:89,  selVendas:67,  selPct:75.3, volume:1163,   transp:'—', plano:'vazio' },
+  { cidade:'Joinville',          siME2:1754043, siFlex:4420,   share:'0,00%', shareW:4,  sellers:158, selVendas:132, selPct:83.5, volume:4420,   transp:'—', plano:'vazio' },
+  { cidade:'Jandira',            siME2:1696892, siFlex:24556,  share:'0,01%', shareW:8,  sellers:156, selVendas:141, selPct:90.4, volume:24556,  transp:'—', plano:'vazio' },
+  { cidade:'Santos',             siME2:1686121, siFlex:8187,   share:'0,00%', shareW:4,  sellers:143, selVendas:123, selPct:86.0, volume:8187,   transp:'Guri dos Pacotinhos', plano:'integracao' },
+  { cidade:'Atibaia',            siME2:1574046, siFlex:11741,  share:'0,00%', shareW:4,  sellers:124, selVendas:107, selPct:86.3, volume:11741,  transp:'—', plano:'vazio' },
+  { cidade:'Indaiatuba',         siME2:1533601, siFlex:7915,   share:'0,00%', shareW:4,  sellers:156, selVendas:134, selPct:85.9, volume:7915,   transp:'—', plano:'vazio' },
+];
+
+const planoLabels = {
+  integracao:  '<span class="plano pl-integracao">Integração</span>',
+  performance: '<span class="plano pl-performance">Performance</span>',
+  hunting:     '<span class="plano pl-hunting">Hunting</span>',
+  'inte-perf': '<span class="plano pl-inte-perf">Inte + Perf</span>',
+  vazio:       '<span class="pl-vazio">—</span>',
+};
+
+let currentSort = 'siME2';
+
+function fmt(n) { return n.toLocaleString('pt-BR'); }
+
+function renderMainTable(data) {
+  const tbody = document.getElementById('mainTable');
+  const noResults = document.getElementById('noResults');
+  document.getElementById('rowCount').textContent = data.length;
+
+  if (data.length === 0) {
+    tbody.innerHTML = '';
+    noResults.style.display = 'block';
+    return;
+  }
+  noResults.style.display = 'none';
+
+  tbody.innerHTML = data.map(d => `
+    <tr>
+      <td class="cidade">${d.cidade}</td>
+      <td class="num">${fmt(d.siME2)}</td>
+      <td class="num">${fmt(d.siFlex)}</td>
+      <td>
+        <div class="share-bar-wrap">
+          <div class="share-bar" style="width:${d.shareW}px"></div>
+          <span class="share-val">${d.share}</span>
+        </div>
+      </td>
+      <td style="text-align:center;">${d.sellers}</td>
+      <td style="text-align:center;">
+        <div class="sellers-wrap">
+          <span class="sellers-main">${d.selVendas}</span>
+          <span class="sellers-pct">(${d.selPct}%)</span>
+        </div>
+      </td>
+      <td style="text-align:center;"><span class="volume-val">${fmt(d.volume)}</span></td>
+      <td><span class="transp" title="${d.transp}">${d.transp}</span></td>
+      <td>${planoLabels[d.plano]}</td>
+    </tr>
+  `).join('');
+}
+
+function getSorted(data, col) {
+  return [...data].sort((a, b) => {
+    if (col === 'cidade') return a.cidade.localeCompare(b.cidade, 'pt-BR');
+    return b[col] - a[col];
+  });
+}
+
+function filterTable() {
+  const q     = document.getElementById('searchInput').value.toLowerCase();
+  const plano = document.getElementById('filterPlano').value;
+  const sort  = document.getElementById('sortCol').value;
+  currentSort = sort;
+
+  let filtered = cidades.filter(d => {
+    const matchQ = !q || d.cidade.toLowerCase().includes(q) || d.transp.toLowerCase().includes(q);
+    const matchP = !plano || d.plano === plano;
+    return matchQ && matchP;
+  });
+
+  filtered = getSorted(filtered, sort);
+  renderMainTable(filtered);
+}
+
+function setSortCol(col) {
+  document.getElementById('sortCol').value = col;
+  filterTable();
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+}
+
+// ── SELLERS TABLE ──
+function renderSellersTable() {
+  const top = getSorted(cidades, 'sellers').slice(0, 10);
+  const tbody = document.getElementById('sellersTable');
+  tbody.innerHTML = top.map(d => `
+    <tr>
+      <td class="cidade">${d.cidade}</td>
+      <td class="num">${d.sellers}</td>
+      <td class="num">
+        <span class="sellers-main">${d.selVendas}</span>
+        <span class="sellers-pct" style="margin-left:4px">(${d.selPct}%)</span>
+      </td>
+      <td class="num"><span class="volume-val">${fmt(d.volume)}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ── CHARTS ──
+function iniciarGraficos() {
+  if (typeof Chart === 'undefined') {
+    setTimeout(iniciarGraficos, 500);
+    return;
+  }
+
+  const top10  = getSorted(cidades, 'siME2').slice(0, 10);
+  const labels = top10.map(d => d.cidade);
+  const siME2  = top10.map(d => d.siME2);
+  const siFlex = top10.map(d => d.siFlex);
+
+  const baseOpts = (max, color) => ({
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR')
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#f0f0ee' },
+        ticks: { color: '#999', font: { size: 10, family: 'DM Sans' } },
+        max
+      },
+      y: {
+        grid: { display: false },
+        ticks: { color: '#333', font: { size: 11, weight: '600', family: 'DM Sans' } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartME2'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'SI ME2', data: siME2, backgroundColor: '#FFE600', borderRadius: 5 }]
+    },
+    options: baseOpts(7000000)
+  });
+
+  new Chart(document.getElementById('chartFlex'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'SI Flex', data: siFlex, backgroundColor: '#0d0d0d', borderRadius: 5 }]
+    },
+    options: baseOpts(200000)
+  });
+}
+
+// ── INIT ──
+fetchLiveData();
+renderSellersTable();
+renderMainTable(getSorted(cidades, 'siME2'));
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', iniciarGraficos);
+} else {
+  iniciarGraficos();
+}
+</script>
+</body>
+</html>

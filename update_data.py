@@ -2,7 +2,7 @@ import json, subprocess, sys
 from datetime import datetime
 from google.cloud import bigquery
 
-QUERY = """
+QUERY_PACOTES = """
 SELECT
   FORMAT_DATE('%Y-%m', DATE(shp.SHP_DATE_HANDLING_ID)) AS mes,
   UPPER(adr_buyer.SHP_ADD_CITY_NAME) AS cidade,
@@ -37,39 +37,86 @@ GROUP BY mes, cidade, transportadora
 ORDER BY mes, qtd_total_pacotes DESC
 """
 
+QUERY_SI = """
+SELECT
+  UPPER(REGEXP_REPLACE(t3.CUS_CITY,
+    r'[ÀÂÃÄÅàâãäåÈÉÊËèêëÌÍÎÏìîïÒÓÔÕÖØòôõöøÙÚÛÜùûüÑñÇçÝýÿ]', '')) AS cidade,
+  SUM(CASE WHEN t1.SHIPPING_MODE = 'me2'        THEN t1.SI ELSE 0 END) AS si_me2,
+  SUM(CASE WHEN t1.LOGISTIC_TYPE = 'self_service' THEN t1.SI ELSE 0 END) AS si_flex
+FROM `meli-bi-data.WHOWNER.DM_EFICIENCIA_MLB` AS t1
+INNER JOIN `meli-bi-data.WHOWNER.LK_CUS_CUSTOMERS_DATA` AS t3
+  ON t3.CUS_CUST_ID = t1.CUS_CUST_ID_SEL
+  AND t3.SIT_SITE_ID_CUS = 'MLB'
+WHERE
+  t1.ORD_CLOSED_DT >= CURRENT_DATE() - 90
+  AND t1.TGMV_FLG = TRUE
+  AND t1.SEGMENTO_DETAIL NOT IN ('1P', 'PL', 'CBT')
+  AND (t1.ITE_ITEM_HB_FLG IS FALSE OR t1.ITE_ITEM_HB_FLG IS NULL)
+  AND t1.SENDER_STATE LIKE 'BR-%'
+  AND UPPER(REGEXP_REPLACE(t3.CUS_CITY,
+      r'[ÀÂÃÄÅàâãäåÈÉÊËèêëÌÍÎÏìîïÒÓÔÕÖØòôõöøÙÚÛÜùûüÑñÇçÝýÿ]', '')) IN (
+    'FRANCA','JUNDIAI','CAMPINAS','IBITINGA','SOROCABA',
+    'RIBEIRAO PRETO','EXTREMA','SAO JOSE DO RIO PRETO',
+    'CAJAMAR','BARUERI','GOIANIA','COTIA','AMERICANA',
+    'MOGI DAS CRUZES','MAUA','SAO JOSE DOS CAMPOS',
+    'LIMEIRA','SANTANA DE PARNAIBA','MARINGA','BIRIGUI',
+    'JOINVILLE','JANDIRA','SANTOS','ATIBAIA','INDAIATUBA'
+  )
+GROUP BY 1
+ORDER BY 1
+"""
+
 def main():
-    print(f"[{datetime.now():%Y-%m-%d %H:%M}] Iniciando query no BigQuery...")
     client = bigquery.Client(project="meli-bi-data")
-    rows = list(client.query(QUERY).result())
+    now   = datetime.now()
 
-    if not rows:
-        print("ERRO: query retornou 0 linhas.")
+    print(f"[{now:%Y-%m-%d %H:%M}] Query 1/2 — pacotes por cidade/mês...")
+    rows_pacotes = list(client.query(QUERY_PACOTES).result())
+    if not rows_pacotes:
+        print("ERRO: query pacotes retornou 0 linhas.")
         sys.exit(1)
+    print(f"  → {len(rows_pacotes)} registros")
 
-    data = [
+    print(f"[{datetime.now():%Y-%m-%d %H:%M}] Query 2/2 — SI ME2 e SI Flex por cidade...")
+    rows_si = list(client.query(QUERY_SI).result())
+    if not rows_si:
+        print("AVISO: query SI retornou 0 linhas.")
+    print(f"  → {len(rows_si)} cidades")
+
+    dados = [
         {
-            "mes": r.mes,
-            "cidade": r.cidade,
-            "transportadora": r.transportadora or "",
+            "mes":               r.mes,
+            "cidade":            r.cidade,
+            "transportadora":    r.transportadora or "",
             "qtd_total_pacotes": int(r.qtd_total_pacotes or 0),
-            "qtd_pacotes_atraso": int(r.qtd_pacotes_atraso or 0),
+            "qtd_pacotes_atraso":int(r.qtd_pacotes_atraso or 0),
         }
-        for r in rows
+        for r in rows_pacotes
+    ]
+
+    si_cidades = [
+        {
+            "cidade":  r.cidade,
+            "si_me2":  int(r.si_me2  or 0),
+            "si_flex": int(r.si_flex or 0),
+        }
+        for r in rows_si
     ]
 
     output = {
-        "atualizado_em": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "total_registros": len(data),
-        "dados": data,
+        "atualizado_em":   now.strftime("%Y-%m-%d %H:%M"),
+        "total_registros": len(dados),
+        "dados":           dados,
+        "si_cidades":      si_cidades,
     }
 
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"[OK] {len(data)} registros salvos em data.json")
+    print(f"[OK] data.json salvo — {len(dados)} pacotes, {len(si_cidades)} cidades SI")
 
     subprocess.run(["git", "add", "data.json"], check=True)
-    subprocess.run(["git", "commit", "-m", f"data: atualiza volume flex {datetime.now():%Y-%m-%d}"], check=True)
+    subprocess.run(["git", "commit", "-m", f"data: atualiza volume flex + SI {now:%Y-%m-%d}"], check=True)
     subprocess.run(["git", "push"], check=True)
     print("[OK] Push realizado — dashboard atualizado.")
 

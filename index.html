@@ -827,6 +827,14 @@ async function fetchLiveData() {
       qtd_total_pacotes: String(d.qtd_total_pacotes),
       qtd_pacotes_atraso:String(d.qtd_pacotes_atraso),
     }));
+    // aplica SI ME2 e SI Flex vivos
+    if (json.si_cidades && json.si_cidades.length > 0) {
+      json.si_cidades.forEach(si => {
+        const key = normalizeCity(si.cidade);
+        const c = cidades.find(c => normalizeCity(c.cidade) === key);
+        if (c) { c.siME2 = si.si_me2; c.siFlex = si.si_flex; }
+      });
+    }
     populateLiveFilters();
     renderLiveSection();
     updateSyncBadge(true, json.atualizado_em);

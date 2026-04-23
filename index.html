@@ -927,31 +927,31 @@ function normalizeCity(name) {
 
 // ── DADOS ESTÁTICOS ──────────────────────────────────────────────────
 const cidades = [
-  { cidade:'Franca',             siME2:6407743, siFlex:8272,   share:'0,00%', shareW:4,  sellers:229, selVendas:187, selPct:81.7, volume:8272,   transp:'Moto Express / Anjun Super Express', plano:'vazio' },
-  { cidade:'Jundiaí',            siME2:6335493, siFlex:19773,  share:'0,01%', shareW:8,  sellers:412, selVendas:338, selPct:82.0, volume:19773,  transp:'Delivery Company / Dan Delivery Express', plano:'integracao' },
-  { cidade:'Campinas',           siME2:5154703, siFlex:57961,  share:'0,02%', shareW:14, sellers:412, selVendas:385, selPct:93.4, volume:57961,  transp:'Pex / Mais Velozes Express / Mega Flex', plano:'integracao' },
-  { cidade:'Ibitinga',           siME2:4068590, siFlex:444,    share:'0,00%', shareW:4,  sellers:145, selVendas:89,  selPct:61.4, volume:444,    transp:'—', plano:'vazio' },
-  { cidade:'Sorocaba',           siME2:3601983, siFlex:11522,  share:'0,00%', shareW:4,  sellers:167, selVendas:142, selPct:85.0, volume:11522,  transp:'Original Express', plano:'integracao' },
-  { cidade:'Ribeirão Preto',     siME2:2929116, siFlex:12524,  share:'0,00%', shareW:4,  sellers:188, selVendas:159, selPct:84.6, volume:12524,  transp:'Mais Velozes Express', plano:'hunting' },
-  { cidade:'Extrema',            siME2:2847801, siFlex:238,    share:'0,00%', shareW:4,  sellers:78,  selVendas:45,  selPct:57.7, volume:238,    transp:'—', plano:'vazio' },
-  { cidade:'S.J. Rio Preto',     siME2:2665748, siFlex:6325,   share:'0,00%', shareW:4,  sellers:156, selVendas:128, selPct:82.1, volume:6325,   transp:'Nobres Entregas', plano:'integracao' },
-  { cidade:'Cajamar',            siME2:2628906, siFlex:34520,  share:'0,01%', shareW:8,  sellers:234, selVendas:198, selPct:84.6, volume:34520,  transp:'27 transportadoras atualmente', plano:'performance' },
-  { cidade:'Barueri',            siME2:2381925, siFlex:136863, share:'0,04%', shareW:40, sellers:312, selVendas:289, selPct:92.6, volume:136863, transp:'27 transportadoras atualmente', plano:'performance' },
-  { cidade:'Goiânia',            siME2:2283576, siFlex:16298,  share:'0,00%', shareW:4,  sellers:219, selVendas:189, selPct:86.3, volume:16298,  transp:'Guri dos Pacotinhos / Única Express / Speed Boys', plano:'inte-perf' },
-  { cidade:'Cotia',              siME2:2271499, siFlex:143755, share:'0,04%', shareW:40, sellers:267, selVendas:245, selPct:91.8, volume:143755, transp:'27 transportadoras atualmente', plano:'vazio' },
-  { cidade:'Americana',          siME2:2249289, siFlex:2325,   share:'0,00%', shareW:4,  sellers:145, selVendas:118, selPct:81.4, volume:2325,   transp:'Busca Entregas', plano:'vazio' },
-  { cidade:'Mogi das Cruzes',    siME2:2205656, siFlex:185730, share:'0,05%', shareW:50, sellers:298, selVendas:278, selPct:93.3, volume:185730, transp:'27 transportadoras atualmente', plano:'performance' },
-  { cidade:'Mauá',               siME2:2192841, siFlex:172897, share:'0,05%', shareW:50, sellers:276, selVendas:256, selPct:92.8, volume:172897, transp:'—', plano:'vazio' },
-  { cidade:'S.J. dos Campos',    siME2:1982979, siFlex:4277,   share:'0,00%', shareW:4,  sellers:203, selVendas:167, selPct:82.3, volume:4277,   transp:'—', plano:'vazio' },
-  { cidade:'Limeira',            siME2:1845994, siFlex:2294,   share:'0,00%', shareW:4,  sellers:134, selVendas:109, selPct:81.3, volume:2294,   transp:'—', plano:'vazio' },
-  { cidade:'Santana de Parnaíba',siME2:1834994, siFlex:107494, share:'0,03%', shareW:30, sellers:189, selVendas:172, selPct:91.0, volume:107494, transp:'—', plano:'vazio' },
-  { cidade:'Maringá',            siME2:1780876, siFlex:7866,   share:'0,00%', shareW:4,  sellers:164, selVendas:139, selPct:84.8, volume:7866,   transp:'—', plano:'vazio' },
-  { cidade:'Birigui',            siME2:1770724, siFlex:1163,   share:'0,00%', shareW:4,  sellers:89,  selVendas:67,  selPct:75.3, volume:1163,   transp:'—', plano:'vazio' },
-  { cidade:'Joinville',          siME2:1754043, siFlex:4420,   share:'0,00%', shareW:4,  sellers:158, selVendas:132, selPct:83.5, volume:4420,   transp:'—', plano:'vazio' },
-  { cidade:'Jandira',            siME2:1696892, siFlex:24556,  share:'0,01%', shareW:8,  sellers:156, selVendas:141, selPct:90.4, volume:24556,  transp:'—', plano:'vazio' },
-  { cidade:'Santos',             siME2:1686121, siFlex:8187,   share:'0,00%', shareW:4,  sellers:143, selVendas:123, selPct:86.0, volume:8187,   transp:'Guri dos Pacotinhos', plano:'integracao' },
-  { cidade:'Atibaia',            siME2:1574046, siFlex:11741,  share:'0,00%', shareW:4,  sellers:124, selVendas:107, selPct:86.3, volume:11741,  transp:'—', plano:'vazio' },
-  { cidade:'Indaiatuba',         siME2:1533601, siFlex:7915,   share:'0,00%', shareW:4,  sellers:156, selVendas:134, selPct:85.9, volume:7915,   transp:'—', plano:'vazio' },
+  { cidade:'Franca',                  siME2:6407743, siFlex:8272,   share:'0,00%', shareW:4,  sellers:229, selVendas:187, selPct:81.7, volume:0, transp:'Moto Express / Anjun Super Express', plano:'vazio' },
+  { cidade:'Jundiaí',                 siME2:6335493, siFlex:19773,  share:'0,01%', shareW:8,  sellers:412, selVendas:338, selPct:82.0, volume:0, transp:'Delivery Company / Dan Delivery Express', plano:'integracao' },
+  { cidade:'Campinas',                siME2:5154703, siFlex:57961,  share:'0,02%', shareW:14, sellers:412, selVendas:385, selPct:93.4, volume:0, transp:'Pex / Mais Velozes Express / Mega Flex', plano:'integracao' },
+  { cidade:'Ibitinga',                siME2:4068590, siFlex:444,    share:'0,00%', shareW:4,  sellers:145, selVendas:89,  selPct:61.4, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Sorocaba',                siME2:3601983, siFlex:11522,  share:'0,00%', shareW:4,  sellers:167, selVendas:142, selPct:85.0, volume:0, transp:'Original Express', plano:'integracao' },
+  { cidade:'Ribeirão Preto',          siME2:2929116, siFlex:12524,  share:'0,00%', shareW:4,  sellers:188, selVendas:159, selPct:84.6, volume:0, transp:'Mais Velozes Express', plano:'hunting' },
+  { cidade:'Extrema',                 siME2:2847801, siFlex:238,    share:'0,00%', shareW:4,  sellers:78,  selVendas:45,  selPct:57.7, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'São José do Rio Preto',   siME2:2665748, siFlex:6325,   share:'0,00%', shareW:4,  sellers:156, selVendas:128, selPct:82.1, volume:0, transp:'Nobres Entregas', plano:'integracao' },
+  { cidade:'Cajamar',                 siME2:2628906, siFlex:34520,  share:'0,01%', shareW:8,  sellers:234, selVendas:198, selPct:84.6, volume:0, transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Barueri',                 siME2:2381925, siFlex:136863, share:'0,04%', shareW:40, sellers:312, selVendas:289, selPct:92.6, volume:0, transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Goiânia',                 siME2:2283576, siFlex:16298,  share:'0,00%', shareW:4,  sellers:219, selVendas:189, selPct:86.3, volume:0, transp:'Guri dos Pacotinhos / Única Express / Speed Boys', plano:'inte-perf' },
+  { cidade:'Cotia',                   siME2:2271499, siFlex:143755, share:'0,04%', shareW:40, sellers:267, selVendas:245, selPct:91.8, volume:0, transp:'27 transportadoras atualmente', plano:'vazio' },
+  { cidade:'Americana',               siME2:2249289, siFlex:2325,   share:'0,00%', shareW:4,  sellers:145, selVendas:118, selPct:81.4, volume:0, transp:'Busca Entregas', plano:'vazio' },
+  { cidade:'Mogi das Cruzes',         siME2:2205656, siFlex:185730, share:'0,05%', shareW:50, sellers:298, selVendas:278, selPct:93.3, volume:0, transp:'27 transportadoras atualmente', plano:'performance' },
+  { cidade:'Mauá',                    siME2:2192841, siFlex:172897, share:'0,05%', shareW:50, sellers:276, selVendas:256, selPct:92.8, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'São José dos Campos',     siME2:1982979, siFlex:4277,   share:'0,00%', shareW:4,  sellers:203, selVendas:167, selPct:82.3, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Limeira',                 siME2:1845994, siFlex:2294,   share:'0,00%', shareW:4,  sellers:134, selVendas:109, selPct:81.3, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Santana de Parnaíba',     siME2:1834994, siFlex:107494, share:'0,03%', shareW:30, sellers:189, selVendas:172, selPct:91.0, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Maringá',                 siME2:1780876, siFlex:7866,   share:'0,00%', shareW:4,  sellers:164, selVendas:139, selPct:84.8, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Birigui',                 siME2:1770724, siFlex:1163,   share:'0,00%', shareW:4,  sellers:89,  selVendas:67,  selPct:75.3, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Joinville',               siME2:1754043, siFlex:4420,   share:'0,00%', shareW:4,  sellers:158, selVendas:132, selPct:83.5, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Jandira',                 siME2:1696892, siFlex:24556,  share:'0,01%', shareW:8,  sellers:156, selVendas:141, selPct:90.4, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Santos',                  siME2:1686121, siFlex:8187,   share:'0,00%', shareW:4,  sellers:143, selVendas:123, selPct:86.0, volume:0, transp:'Guri dos Pacotinhos', plano:'integracao' },
+  { cidade:'Atibaia',                 siME2:1574046, siFlex:11741,  share:'0,00%', shareW:4,  sellers:124, selVendas:107, selPct:86.3, volume:0, transp:'—', plano:'vazio' },
+  { cidade:'Indaiatuba',              siME2:1533601, siFlex:7915,   share:'0,00%', shareW:4,  sellers:156, selVendas:134, selPct:85.9, volume:0, transp:'—', plano:'vazio' },
 ];
 
 const planoLabels = {
@@ -996,7 +996,7 @@ function renderMainTable(data) {
           <span class="sellers-pct">(${d.selPct}%)</span>
         </div>
       </td>
-      <td style="text-align:center;"><span class="volume-val">${fmt(d.volume)}</span></td>
+      <td style="text-align:center;">${d.volume > 0 ? `<span class="volume-val">${fmt(d.volume)}</span>` : '<span style="color:#ccc">—</span>'}</td>
       <td><span class="transp" title="${d.transp}">${d.transp}</span></td>
       <td>${planoLabels[d.plano]}</td>
     </tr>

@@ -744,6 +744,7 @@
         <select class="filter-select" id="sortCol" onchange="filterTable()">
           <option value="siME2">Ordenar: SI ME2 ↓</option>
           <option value="siFlex">Ordenar: SI Flex ↓</option>
+          <option value="potencial">Ordenar: Potencial Flex ↓</option>
           <option value="cidade">Ordenar: Cidade A-Z</option>
           <option value="sellers">Ordenar: Sellers ↓</option>
           <option value="volume">Ordenar: Volume Flex ↓</option>
@@ -762,7 +763,7 @@
             <th onclick="setSortCol('sellers')" class="th-center">Sellers Ativos <span class="sort-arrow">↕</span></th>
             <th class="th-center">Sellers c/ Vendas</th>
             <th onclick="setSortCol('volume')" class="th-center">Volume Flex <span class="sort-arrow">↕</span></th>
-            <th>Potencial Flex</th>
+            <th onclick="setSortCol('potencial')">Potencial Flex <span class="sort-arrow">↕</span></th>
             <th>Transportadora</th>
             <th>Plano</th>
           </tr>
@@ -1065,6 +1066,11 @@ function renderMainTable(data) {
 function getSorted(data, col) {
   return [...data].sort((a, b) => {
     if (col === 'cidade') return a.cidade.localeCompare(b.cidade, 'pt-BR');
+    if (col === 'potencial') {
+      const pA = a.siFlex > 0 ? a.volume / a.siFlex : 0;
+      const pB = b.siFlex > 0 ? b.volume / b.siFlex : 0;
+      return pB - pA;
+    }
     return b[col] - a[col];
   });
 }

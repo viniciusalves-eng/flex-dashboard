@@ -49,9 +49,7 @@ INNER JOIN `meli-bi-data.WHOWNER.LK_CUS_CUSTOMERS_DATA` AS t3
   AND t3.SIT_SITE_ID_CUS = 'MLB'
 WHERE
   t1.ORD_CLOSED_DT >= CURRENT_DATE() - 90
-  AND t1.TGMV_FLG = TRUE
   AND t1.SEGMENTO_DETAIL NOT IN ('1P', 'PL', 'CBT')
-  AND (t1.ITE_ITEM_HB_FLG IS FALSE OR t1.ITE_ITEM_HB_FLG IS NULL)
   AND t1.SENDER_STATE LIKE 'BR-%'
   AND UPPER(REGEXP_REPLACE(t3.CUS_CITY,
       r'[ÀÂÃÄÅàâãäåÈÉÊËèêëÌÍÎÏìîïÒÓÔÕÖØòôõöøÙÚÛÜùûüÑñÇçÝýÿ]', '')) IN (
@@ -75,13 +73,13 @@ def main():
     if not rows_pacotes:
         print("ERRO: query pacotes retornou 0 linhas.")
         sys.exit(1)
-    print(f"  → {len(rows_pacotes)} registros")
+    print(f"  >>{len(rows_pacotes)} registros")
 
     print(f"[{datetime.now():%Y-%m-%d %H:%M}] Query 2/2 — SI ME2 e SI Flex por cidade...")
     rows_si = list(client.query(QUERY_SI).result())
     if not rows_si:
         print("AVISO: query SI retornou 0 linhas.")
-    print(f"  → {len(rows_si)} cidades")
+    print(f"  >>{len(rows_si)} cidades")
 
     dados = [
         {

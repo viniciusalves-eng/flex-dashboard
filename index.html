@@ -664,49 +664,6 @@
     </div>
   </div>
 
-  <!-- LIVE: VOLUME FLEX POR CIDADE (BigQuery) -->
-  <div class="table-section" id="liveSection" style="margin-bottom:28px;">
-    <div class="table-header">
-      <div class="table-header-top">
-        <div class="live-header">
-          <h3>📡 Volume Flex por Cidade — Dados ao Vivo</h3>
-        </div>
-        <div class="count-badge" id="liveCount">Carregando…</div>
-      </div>
-      <div id="mesTabs" class="mes-tabs"></div>
-      <div class="controls" style="padding-bottom:16px;">
-        <div class="search-wrap">
-          <span class="search-icon">🏙️</span>
-          <select class="search-input" id="liveFiltroCity" onchange="renderLiveSection()" style="padding-left:36px;">
-            <option value="">Todas as cidades</option>
-          </select>
-        </div>
-        <select class="filter-select" id="liveFiltroTransp" onchange="renderLiveSection()">
-          <option value="">Todas as transportadoras</option>
-        </select>
-      </div>
-    </div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Cidade</th>
-            <th class="th-center">Transportadoras</th>
-            <th class="th-right">Vol. Total Pacotes</th>
-            <th class="th-right">Pacotes em Atraso</th>
-            <th class="th-center">% Atraso</th>
-          </tr>
-        </thead>
-        <tbody id="liveTable"></tbody>
-      </table>
-      <div class="no-results" id="liveNoResults">
-        <span>📡</span>
-        Nenhum dado encontrado.
-      </div>
-    </div>
-  </div>
-
   <!-- CHARTS -->
   <div class="charts">
     <div class="chart-box">
@@ -785,6 +742,49 @@
     </div>
   </div>
 
+  <!-- LIVE: VOLUME FLEX POR CIDADE (BigQuery) -->
+  <div class="table-section" id="liveSection" style="margin-bottom:28px;">
+    <div class="table-header">
+      <div class="table-header-top">
+        <div class="live-header">
+          <h3>📡 Volume Flex por Cidade — Dados ao Vivo</h3>
+        </div>
+        <div class="count-badge" id="liveCount">Carregando…</div>
+      </div>
+      <div id="mesTabs" class="mes-tabs"></div>
+      <div class="controls" style="padding-bottom:16px;">
+        <div class="search-wrap">
+          <span class="search-icon">🏙️</span>
+          <select class="search-input" id="liveFiltroCity" onchange="renderLiveSection()" style="padding-left:36px;">
+            <option value="">Todas as cidades</option>
+          </select>
+        </div>
+        <select class="filter-select" id="liveFiltroTransp" onchange="renderLiveSection()">
+          <option value="">Todas as transportadoras</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Cidade</th>
+            <th class="th-center">Transportadoras</th>
+            <th class="th-right">Vol. Total Pacotes</th>
+            <th class="th-right">Pacotes em Atraso</th>
+            <th class="th-center">% Atraso</th>
+          </tr>
+        </thead>
+        <tbody id="liveTable"></tbody>
+      </table>
+      <div class="no-results" id="liveNoResults">
+        <span>📡</span>
+        Nenhum dado encontrado.
+      </div>
+    </div>
+  </div>
+
   <div class="footer">Dashboard Flex MLB · Dados internos · Uso restrito</div>
 </div>
 
@@ -835,6 +835,7 @@ async function fetchLiveData() {
         const c = cidades.find(c => normalizeCity(c.cidade) === key);
         if (c) { c.siME2 = si.si_me2; c.siFlex = si.si_flex; }
       });
+      setTimeout(buildCharts, 50);
     }
     populateLiveFilters();
     renderLiveSection();
@@ -1116,12 +1117,15 @@ function renderSellersTable() {
 
 // ── CHARTS ──
 const ML_PALETTE = ['#FFE600', '#7BC8F6', '#FF8FA3', '#A8D5A2', '#C4B5FD', '#D4D4D4'];
+let chartME2Instance = null, chartFlexInstance = null;
 
 function buildCharts() {
   const top10  = getSorted(cidades, 'siME2').slice(0, 10);
   const labels = top10.map(d => d.cidade);
   const siME2  = top10.map(d => d.siME2);
   const siFlex = top10.map(d => d.siFlex);
+  const maxME2  = Math.max(...siME2)  * 1.1;
+  const maxFlex = Math.max(...siFlex) * 1.1;
 
   const baseOpts = (max) => ({
     indexAxis: 'y',
@@ -1129,9 +1133,7 @@ function buildCharts() {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        callbacks: { label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR') }
-      }
+      tooltip: { callbacks: { label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR') } }
     },
     scales: {
       x: {
@@ -1146,16 +1148,19 @@ function buildCharts() {
     }
   });
 
-  new Chart(document.getElementById('chartME2'), {
+  if (chartME2Instance)  { chartME2Instance.destroy();  chartME2Instance  = null; }
+  if (chartFlexInstance) { chartFlexInstance.destroy(); chartFlexInstance = null; }
+
+  chartME2Instance = new Chart(document.getElementById('chartME2'), {
     type: 'bar',
     data: { labels, datasets: [{ label: 'SI ME2', data: siME2, backgroundColor: ML_PALETTE[0], borderRadius: 5 }] },
-    options: baseOpts(7000000)
+    options: baseOpts(maxME2)
   });
 
-  new Chart(document.getElementById('chartFlex'), {
+  chartFlexInstance = new Chart(document.getElementById('chartFlex'), {
     type: 'bar',
     data: { labels, datasets: [{ label: 'SI Flex', data: siFlex, backgroundColor: ML_PALETTE[1], borderRadius: 5 }] },
-    options: baseOpts(200000)
+    options: baseOpts(maxFlex)
   });
 }
 

@@ -1046,8 +1046,10 @@ function setSortCol(col) {
 
 // ── SELLERS TABLE ──
 function renderSellersTable() {
-  const top = getSorted(cidades, 'sellers').slice(0, 10);
   const tbody = document.getElementById('sellersTable');
+  if (!tbody) return; // Proteção se elemento não existir
+  
+  const top = getSorted(cidades, 'sellers').slice(0, 10);
   tbody.innerHTML = top.map(d => `
     <tr>
       <td class="cidade">${d.cidade}</td>
@@ -1118,14 +1120,22 @@ function iniciarGraficos() {
 }
 
 // ── INIT ──
-updateKPIs();
-fetchLiveData();
-renderSellersTable();
-renderMainTable(getSorted(cidades, 'siME2'));
+function initDashboard() {
+  updateKPIs();
+  fetchLiveData();
+  renderSellersTable();
+  renderMainTable(getSorted(cidades, 'siME2'));
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarGraficos);
+  } else {
+    iniciarGraficos();
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', iniciarGraficos);
+  document.addEventListener('DOMContentLoaded', initDashboard);
 } else {
-  iniciarGraficos();
+  initDashboard();
 }
 </script>
 </body>
